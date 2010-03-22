@@ -4,7 +4,22 @@ var minlen = 16;
 window.onload = function(){
   init();
 
-  var track = parseMML("t60l16 @3 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4; t60l16 @3 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4; t60l16 @3 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4");
+//   var track = parseMML("t60l16 @3 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4; t60l16 @3 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4; t60l16 @3 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4");
+//   var note;
+
+//   for(var i = 0; i < track.notes.length; i++){
+//     note = track.notes[i];
+//     addNote(note.key, note.start, note.length);
+//   }
+//   Score.bpm = track.bpm;
+
+};
+
+function parseInput(){
+  init();
+
+  var mml = document.getElementById("mml");
+  var track = parseMML(mml.value);
   var note;
 
   for(var i = 0; i < track.notes.length; i++){
@@ -12,8 +27,7 @@ window.onload = function(){
     addNote(note.key, note.start, note.length);
   }
   Score.bpm = track.bpm;
-
-};
+}
 
 function init(){
   Score = {
@@ -75,6 +89,7 @@ function convertToPitch(key){
 }
 
 function play(){
+  parseInput();
   Player.currentBar = 0;
 
   Score.notes.sort(
@@ -99,6 +114,81 @@ function stop(){
   for(i = 0; i < ndlist.length; i++){
     ndlist[i].pause();
     Player.renderStream.removeChild(ndlist[i]);
+  }
+}
+
+function renderingStart(){
+  parseInput();
+  document.getElementById("info").appendChild(
+    document.createTextNode("レンダリング開始..."));
+  setTimeout(renderingAll, 1);
+}
+
+function renderingAll(){
+  var i, len, notes, currentBar;
+  var signal, audio, url, baseSignal, totalFrame;
+
+  Score.notes.sort(
+    function (a, b){
+      return a.start - b.start;
+    });
+
+  var lastNote = Score.notes[Score.notes.length-1];
+  Player.endTime = lastNote.end + minlen;
+
+  notes = Score.notes;
+  len = notes.length;
+  totalFrame = Player.endTime * ((60.0 / Score.bpm) / (minlen / 4)) * 44100;
+  baseSignal = new Array(totalFrame);
+  for(i = 0; i < totalFrame; i++){
+    baseSignal[i] = 0;
+  }
+  
+  for(i = 0; i < len; i++){
+    signal = createRawSawSignal(
+      ((60.0 / Score.bpm) / (minlen / 4)) * 
+	(notes[i].end - notes[i].start) - 0.001, 
+      convertToPitch(notes[i].key));
+    mixSignal(baseSignal, signal, ((60.0 / Score.bpm) / (minlen / 4)) * notes[i].start * 44100);
+  }
+
+  var binary;
+  binary = convertToBinary(baseSignal);
+  url = convertToURL(binary);
+  audio = new Audio(url);
+  Player.renderStream.appendChild(audio);
+  audio.volume = 0.35;
+  Player.renderBuffer = [audio];
+
+  document.getElementById("info").appendChild(
+    document.createTextNode("終了"));
+
+//   setTimeout(playBuffer, 1000);
+//   setTimeout(function()
+// 	     {
+// 	       audio.play();
+// 	     }, 1000);
+  audio.play();
+}
+
+function convertToBinary(signal){
+  var binary = "", i, len;
+  len = signal.length;
+  for(i = 0; i < len; i++){
+    if(signal[i] > 255){
+      binary += String.fromCharCode(255);
+    }
+    else binary += String.fromCharCode(signal[i]);
+  }
+  return binary;
+}
+
+// *(s1+offset)++ = *s2++
+function mixSignal(s1, s2, offset){
+  var i, len;
+  len = s2.length;
+  for(i = 0; i < len; i++){
+    s1[i+offset] = s1[i+offset] + s2[i];
   }
 }
 

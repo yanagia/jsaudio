@@ -50,6 +50,32 @@ function createSawSignal(duration, f){
   return signals;
 }
 
+function createRawSawSignal(duration, f){
+  var i, t;
+  var signals, sig, phase, hz;
+
+  hz = 44100;
+  phase = 0;
+  t = Math.round(duration*hz);
+//   var freq = f * 2.0 * Math.PI / hz;
+  var freq, sum;
+  freq = hz / f;
+  signals = new Array(t);
+  sum = 0.0;
+  for(i = 0; i < t; i++){
+
+    if(phase > freq){
+      phase -= freq;
+    }
+    sig = phase / freq * 255;
+    signals[i] = Math.ceil(sig * 0.2);
+
+    phase += 1;
+  }
+
+  return signals;
+}
+
 function convertToURL(signals){
   var header;
 

@@ -1,0 +1,43 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>JavaScript MML Player Test</title>
+
+<script src="base64.js"></script>
+<script src="wave.js"></script>
+<script src="player.js"></script>
+<script src="mmlparser.js"></script>
+
+</head>
+<body>
+
+<textarea id="mml" cols="80" rows="10">
+t60l16 @3 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4;
+t60l16 @3 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4;
+t60l16 @3 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4
+</textarea>
+
+<form>
+<input type="button" value="リアルタイムレンダリング" onclick="play()">
+<input type="button" value="オフラインレンダリング→再生" onclick="renderingStart()">
+<br><br>
+<input type="button" value="再生停止" onclick="stop()">
+</form>
+<div id="info" style="border: solid 1px; width: 400px;"></div>
+
+  <div id="audioStream"></div>
+<br>
+  created by <a href="http://twitter.com/yanagia">@yanagia</a>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-5594321-6");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+       
+</body>
+</html>
