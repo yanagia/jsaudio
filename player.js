@@ -88,8 +88,39 @@ function convertToPitch(key){
   else return 220.0;
 }
 
+function setUserCode(){
+  var code = document.getElementById("usercode").value;
+
+  try{
+    Player.userCode = new Function(code);
+    return true;
+  }catch(e){
+    alert(e);
+    console.log(e);
+    return false;
+  }
+};
+
+function createSignal(duration, pitch){
+  try{
+    var signal = Player.userCode(duration, pitch);
+  }catch(e){
+    stop();
+    alert("波形を生成する関数に誤りがあります。");
+    console.log(e);
+  }
+//   var binary = "";
+//   var i, len = signal.length;
+//   for(i = 0; i < signal.length; i++){
+//     binary += String.fromCharCode(signal[i]);
+//   }
+//   return binary;
+  return signal;
+}
+
 function play(){
   parseInput();
+  if(! setUserCode()) return;
   Player.currentBar = 0;
 
   Score.notes.sort(
@@ -98,7 +129,7 @@ function play(){
     });
 
   var lastNote = Score.notes[Score.notes.length-1];
-  Player.endTime = lastNote.end + minlen;
+  Player.endTime = lastNote.end;
 
   Player.timer = setInterval(renderBar, 
 			     1000 * ((60.0 / Score.bpm) / (minlen / 4)));
@@ -119,8 +150,7 @@ function stop(){
 
 function renderingStart(){
   parseInput();
-  document.getElementById("info").appendChild(
-    document.createTextNode("レンダリング開始..."));
+  if(! setUserCode()) return;
   setTimeout(renderingAll, 1);
 }
 
@@ -145,10 +175,11 @@ function renderingAll(){
   }
   
   for(i = 0; i < len; i++){
-    signal = createRawSawSignal(
+    signal = createSignal(
       ((60.0 / Score.bpm) / (minlen / 4)) * 
-	(notes[i].end - notes[i].start) - 0.001, 
+	(notes[i].end - notes[i].start), 
       convertToPitch(notes[i].key));
+    signal = signal.map(function(item){ return item * 0.3; });
     mixSignal(baseSignal, signal, ((60.0 / Score.bpm) / (minlen / 4)) * notes[i].start * 44100);
   }
 
@@ -157,17 +188,9 @@ function renderingAll(){
   url = convertToURL(binary);
   audio = new Audio(url);
   Player.renderStream.appendChild(audio);
-  audio.volume = 0.35;
+  audio.volume = 0.30;
   Player.renderBuffer = [audio];
 
-  document.getElementById("info").appendChild(
-    document.createTextNode("終了"));
-
-//   setTimeout(playBuffer, 1000);
-//   setTimeout(function()
-// 	     {
-// 	       audio.play();
-// 	     }, 1000);
   audio.play();
 }
 
@@ -207,23 +230,29 @@ function renderBar(){
 
   for(i = 0; i < len; i++){
     if(notes[i].start == currentBar){
-      signal = createSawSignal(
+      signal = createSignal(
 	((60.0 / Score.bpm) / (minlen / 4)) * 
 	(notes[i].end - notes[i].start) - 0.0001, 
 // 	  * 60 / Score.bpm - 0.01, 
 	convertToPitch(notes[i].key));
-      url = convertToURL(signal);
+      url = convertToURL(convertToBinary(signal));
       audio = new Audio(url);
       Player.renderStream.appendChild(audio); // ここでロードがはじまる
       notes[i].audio = audio;
-      audio.volume = 0.1;
+      audio.volume = 0.05;
       Player.renderBuffer.push(audio); // 再生バッファにためる
-    }else if(notes[i].end+2 == currentBar){
+
+      document.getElementById(notes[i].key.charAt(0))
+	.style.backgroundColor = "#6666ff";  // 色をつけるコード
+    }else if(notes[i].end == currentBar){
       if(notes[i].audio){
 	// release audio
 	notes[i].audio.pause();
 	Player.renderStream.removeChild(notes[i].audio);
 	notes[i].audio = null;	// 参照を切る。これでGCされるはず。
+
+      document.getElementById(notes[i].key.charAt(0))
+	.style.backgroundColor = "#ffffff";  // 色を消すコード	
       }
     }
   }

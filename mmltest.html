@@ -12,18 +12,60 @@
 <body>
 
 <textarea id="mml" cols="80" rows="10">
-t60l16 @3 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4;
-t60l16 @3 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4;
-t60l16 @3 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4
-</textarea>
-
+t60l16 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4;
+t60l16 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4;
+t60l16 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4
+</textarea> <br>
+↑演奏するMML。<table>
+<tr><td id="C">C</td><td id="D">D</td><td id="E">E</td><td id="F">F</td><td id="G">G</td><td id="A">A</td><td = "B">B</td></tr>
+</table>
 <form>
 <input type="button" value="リアルタイムレンダリング" onclick="play()">
 <input type="button" value="オフラインレンダリング→再生" onclick="renderingStart()">
-<br><br>
+<br>
+<br>
 <input type="button" value="再生停止" onclick="stop()">
 </form>
-<div id="info" style="border: solid 1px; width: 400px;"></div>
+↓演奏に使う波形を生成するコード。<br>
+<textarea id="usercode" cols="80" rows="30">
+// これ全体を new Function()でくるんで評価してます。
+// 引数として与えられるのは波形の長さ(duration)と周波数(f)。
+  var duration, f;
+  var i, t;
+  var signals, sig, phase, hz, freq;
+
+  duration = arguments[0];  // 生成すべき波形の長さ（秒）
+  f = arguments[1];  // 生成すべき波形の周波数
+
+  hz = 44100;  // サンプリングレート44.1kHzの波形を生成（変更しないこと）。
+  phase = 0;
+  t = Math.round(duration*hz); // 生成する波形の長さ（フレーム数）
+  freq = f * 2.0 * Math.PI / hz;
+  signals = new Array(t);  // 波形を収めておく配列
+
+  for(i = 0; i < t; i++){
+    sig = Math.sin(phase);  // サイン波(32bit float)を生成
+    sig = (sig + 1) / 2 * 255;   // 0 〜 255 (8bit unsigned char) の範囲に変換
+//    sig = sig > 128 ? 180 : 75;  // (この行を有効にすると矩形波になる)
+    signals[i] = Math.floor(sig);  // 浮動小数点から整数へ型変換
+
+    phase += freq;
+  }
+
+  // ぶちぶち音対策
+  sig = signals[signals.length-1];
+  if(sig > 128){
+    for(; sig >= 128; sig--){
+      signals.push(sig);
+    }
+  }else if(sig < 128){
+    for(; sig <= 128; sig++){
+      signals.push(sig);
+    }
+  }
+
+  return signals;
+</textarea>
 
   <div id="audioStream"></div>
 <br>
