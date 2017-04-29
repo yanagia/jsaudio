@@ -11,13 +11,13 @@
 
 var b64chars 
     = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/';
-var b64tab = function(bin){
+var b64tab = (bin => {
     var t = {};
     for (var i = 0, l = bin.length; i < l; i++) t[bin.charAt(i)] = i;
     return t;
-}(b64chars);
+})(b64chars);
 
-var sub_toBase64 = function(m){
+var sub_toBase64 = m => {
     var n = (m.charCodeAt(0) << 16)
           | (m.charCodeAt(1) <<  8)
           | (m.charCodeAt(2)      );
@@ -27,7 +27,7 @@ var sub_toBase64 = function(m){
          + b64chars.charAt( n         & 63);
 };
 
-var toBase64 = function(bin){
+var toBase64 = bin => {
     if (bin.match(/[^\x00-\xFF]/)) throw 'unsupported character found' ;
     var padlen = 0;
     while(bin.length % 3) {
@@ -43,7 +43,7 @@ var toBase64 = function(bin){
 
 var btoa = window.btoa || toBase64;
 
-var sub_fromBase64 = function(m){
+var sub_fromBase64 = m => {
         var n = (b64tab[ m.charAt(0) ] << 18)
             |   (b64tab[ m.charAt(1) ] << 12)
             |   (b64tab[ m.charAt(2) ] <<  6)
@@ -53,7 +53,7 @@ var sub_fromBase64 = function(m){
         +  String.fromCharCode(  n        & 0xff );
 };
 
-var fromBase64 = function(b64){
+var fromBase64 = b64 => {
     b64 = b64.replace(/[^A-Za-z0-9\+\/]/g, '');
     var padlen = 0;
     while(b64.length % 4){
@@ -69,7 +69,7 @@ var atob = window.atob || fromBase64;
 
 var re_char_nonascii = /[^\x00-\xFF]/g;
 
-var sub_char_nonascii = function(m){
+var sub_char_nonascii = m => {
     var n = m.charCodeAt(0);
     return n < 0x800 ? String.fromCharCode(0xc0 | (n >>>  6))
                      + String.fromCharCode(0x80 | (n & 0x3f))
@@ -79,14 +79,12 @@ var sub_char_nonascii = function(m){
         ;
 };
 
-var utob = function(uni){
-    return uni.replace(re_char_nonascii, sub_char_nonascii);
-};
+var utob = uni => uni.replace(re_char_nonascii, sub_char_nonascii);
 
 var re_bytes_nonascii
     = /[\xC0-\xDF][\x80-\xBF]|[\xE0-\xEF][\x80-\xBF]{2}|[\xF0-\xF7][\x80-\xBF]{3}/g;
 
-var sub_bytes_nonascii = function(m){
+var sub_bytes_nonascii = m => {
     var c0 = m.charCodeAt(0);
     var c1 = m.charCodeAt(1);
     if(c0 < 0xe0){
@@ -99,27 +97,21 @@ var sub_bytes_nonascii = function(m){
     }
 };
     
-var btou = function(bin){
-    return bin.replace(re_bytes_nonascii, sub_bytes_nonascii);
-};
+var btou = bin => bin.replace(re_bytes_nonascii, sub_bytes_nonascii);
 
 if (!this['Base64']) Base64 = {
-    fromBase64:fromBase64,
-    toBase64:toBase64,
-    atob:atob,
-    btoa:btoa,
-    utob:utob,
-    btou:btou,
-    encode:function(u){ return btoa(utob(u)) },
-    encodeURI:function(u){
-        return btoa(utob(u)).replace(/[+\/]/g, function(m0){
-            return m0 == '+' ? '-' : '_';
-        }).replace(/=+$/, '');
+    fromBase64,
+    toBase64,
+    atob,
+    btoa,
+    utob,
+    btou,
+    encode(u) { return btoa(utob(u)) },
+    encodeURI(u) {
+        return btoa(utob(u)).replace(/[+\/]/g, m0 => m0 == '+' ? '-' : '_').replace(/=+$/, '');
     },
-    decode:function(a){ 
-        return btou(atob(a.replace(/[-_]/g, function(m0){
-            return m0 == '-' ? '+' : '/';
-        })));
+    decode(a) { 
+        return btou(atob(a.replace(/[-_]/g, m0 => m0 == '-' ? '+' : '/')));
     }
 };
 
