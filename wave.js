@@ -1,6 +1,9 @@
 function createSquareSignal(t, sinF){
   var i;
-  var signals, sig, phase, hz;
+  var signals;
+  var sig;
+  var phase;
+  var hz;
 
   hz = 44100;
   phase = 0;
@@ -14,7 +17,7 @@ function createSquareSignal(t, sinF){
     signals += String.fromCharCode(sig);
 
     phase += freq;
-  };
+  }
 
   // ぶち切れノイズ対策 -> 今は矩形波なのでやっていない
   var s;
@@ -25,14 +28,21 @@ function createSquareSignal(t, sinF){
 }
 
 function createSawSignal(duration, f){
-  var i, t;
-  var signals, sig, phase, hz;
+  var i;
+  var t;
+  var signals;
+  var sig;
+  var phase;
+  var hz;
 
   hz = 44100;
   phase = 0;
   t = Math.round(duration*hz);
-//   var freq = f * 2.0 * Math.PI / hz;
-  var freq, sum;
+
+  //   var freq = f * 2.0 * Math.PI / hz;
+  var freq;
+
+  var sum;
   freq = hz / f;
   signals = "";
   sum = 0.0;
@@ -51,14 +61,21 @@ function createSawSignal(duration, f){
 }
 
 function createRawSawSignal(duration, f){
-  var i, t;
-  var signals, sig, phase, hz;
+  var i;
+  var t;
+  var signals;
+  var sig;
+  var phase;
+  var hz;
 
   hz = 44100;
   phase = 0;
   t = Math.round(duration*hz);
-//   var freq = f * 2.0 * Math.PI / hz;
-  var freq, sum;
+
+  //   var freq = f * 2.0 * Math.PI / hz;
+  var freq;
+
+  var sum;
   freq = hz / f;
   signals = new Array(t);
   sum = 0.0;

@@ -1,7 +1,18 @@
 function parseMML(smml){
-  var i, c, len, s;
-  var buff, bpm, volume = 8, tone, oct = 4, dnlen = 4, nlen;
-  var mml, current, track;
+  var i;
+  var c;
+  var len;
+  var s;
+  var buff;
+  var bpm;
+  var volume = 8;
+  var tone;
+  var oct = 4;
+  var dnlen = 4;
+  var nlen;
+  var mml;
+  var current;
+  var track;
   var minlen = 16;
 
   mml = smml.toUpperCase();
@@ -12,9 +23,9 @@ function parseMML(smml){
     this.notes.push(
       {
 	key : key + oct,
-	volume : volume,
-	length : length,
-	start : start
+	volume,
+	length,
+	start
       });
   };
 
@@ -102,6 +113,6 @@ function parseMML(smml){
       break;
     }
   }
-  
+
   return track;
 }

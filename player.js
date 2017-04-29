@@ -1,7 +1,8 @@
-var Score, Player;
+var Score;
+var Player;
 var minlen = 16;
 
-window.onload = function(){
+window.onload = () => {
   init();
 
 //   var track = parseMML("t60l16 @3 o4 cdefedc8 efgagfe8 c4 c4 c4 c4 ccddeeffe8d8c4; t60l16 @3 o4 r2 cdefedc8 efgagfe8 c4 c4 c4 eeffe8d8c4; t60l16 @3 o5 r1 cdefedc8 efgagfe8 c4 eeffe8d8c4");
@@ -77,7 +78,7 @@ function addNote(key, sb, eb){
   arr.push({
 	     start : sb,
 	     end : eb+sb,
-	     key : key
+	     key
 	   });
 }
 
@@ -99,7 +100,7 @@ function setUserCode(){
     console.log(e);
     return false;
   }
-};
+}
 
 function createSignal(duration, pitch){
   try{
@@ -124,9 +125,7 @@ function play(){
   Player.currentBar = 0;
 
   Score.notes.sort(
-    function (a, b){
-      return a.start - b.start;
-    });
+    (a, b) => a.start - b.start);
 
   var lastNote = Score.notes[Score.notes.length-1];
   Player.endTime = lastNote.end;
@@ -140,7 +139,8 @@ function stop(){
   clearInterval(Player.timer);
 
   var ndlist = Player.renderStream.childNodes;
-  var i, len;
+  var i;
+  var len;
   len = ndlist.length;
   for(i = 0; i < ndlist.length; i++){
     ndlist[i].pause();
@@ -155,13 +155,18 @@ function renderingStart(){
 }
 
 function renderingAll(){
-  var i, len, notes, currentBar;
-  var signal, audio, url, baseSignal, totalFrame;
+  var i;
+  var len;
+  var notes;
+  var currentBar;
+  var signal;
+  var audio;
+  var url;
+  var baseSignal;
+  var totalFrame;
 
   Score.notes.sort(
-    function (a, b){
-      return a.start - b.start;
-    });
+    (a, b) => a.start - b.start);
 
   var lastNote = Score.notes[Score.notes.length-1];
   Player.endTime = lastNote.end + minlen;
@@ -173,13 +178,13 @@ function renderingAll(){
   for(i = 0; i < totalFrame; i++){
     baseSignal[i] = 0;
   }
-  
+
   for(i = 0; i < len; i++){
     signal = createSignal(
       ((60.0 / Score.bpm) / (minlen / 4)) * 
 	(notes[i].end - notes[i].start), 
       convertToPitch(notes[i].key));
-    signal = signal.map(function(item){ return item * 0.3; });
+    signal = signal.map(item => item * 0.3);
     mixSignal(baseSignal, signal, ((60.0 / Score.bpm) / (minlen / 4)) * notes[i].start * 44100);
   }
 
@@ -195,7 +200,9 @@ function renderingAll(){
 }
 
 function convertToBinary(signal){
-  var binary = "", i, len;
+  var binary = "";
+  var i;
+  var len;
   len = signal.length;
   for(i = 0; i < len; i++){
     if(signal[i] > 255){
@@ -208,7 +215,8 @@ function convertToBinary(signal){
 
 // *(s1+offset)++ = *s2++
 function mixSignal(s1, s2, offset){
-  var i, len;
+  var i;
+  var len;
   len = s2.length;
   for(i = 0; i < len; i++){
     s1[i+offset] = s1[i+offset] + s2[i];
@@ -216,8 +224,13 @@ function mixSignal(s1, s2, offset){
 }
 
 function renderBar(){
-  var i, len, notes, currentBar;
-  var signal, audio, url;
+  var i;
+  var len;
+  var notes;
+  var currentBar;
+  var signal;
+  var audio;
+  var url;
 
   currentBar = Player.currentBar;
   notes = Score.notes;
@@ -256,14 +269,15 @@ function renderBar(){
       }
     }
   }
-  setTimeout(playBuffer, 10); 
+  setTimeout(playBuffer, 10);
 
   Player.currentBar += 1;
 }
 
 // 再生バッファに溜まっているものを再生
 function playBuffer(){
-  var i, len;
+  var i;
+  var len;
   len = Player.renderBuffer.length;
   for(i = 0; i < len; i++){
     Player.renderBuffer[i].play();
